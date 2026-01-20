@@ -30,7 +30,7 @@ export default function HomePage() {
 
           <div className="relative z-10 max-w-lg">
             <div className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold mb-4">
-              🔥 UTBK 2025 tinggal 120 hari lagi!
+              🔥 UTBK 2026 tinggal 120 hari lagi!
             </div>
             <h1 className="text-2xl md:text-4xl font-extrabold mb-3 leading-tight">
               Semangat Belajar,<br />Pejuang PTN! 🚀

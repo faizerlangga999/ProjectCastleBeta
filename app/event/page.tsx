@@ -7,7 +7,7 @@ import { useState } from "react";
 const MOCK_EVENTS = [
     {
         id: 1,
-        title: "Live Session: Strategi Lolos UI 2025",
+        title: "Live Session: Strategi Lolos UI 2026",
         description: "Sharing pengalaman dan tips masuk UI dari kakak tingkat yang sudah lolos",
         date: "2026-01-15",
         time: "19:00",
@@ -49,7 +49,7 @@ const MOCK_EVENTS = [
 const PAST_EVENTS = [
     {
         id: 5,
-        title: "Kick Off: Persiapan UTBK 2025",
+        title: "Kick Off: Persiapan UTBK 2026",
         date: "5 Januari 2026",
         type: "Zoom",
         participants: 245,

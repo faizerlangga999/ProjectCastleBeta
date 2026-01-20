@@ -108,7 +108,7 @@ export default function Sidebar() {
                 </div>
                 <div>
                     <h1 className="text-xl font-bold text-gray-900 leading-tight">Pejuang</h1>
-                    <span className="text-xl font-bold text-[var(--color-primary)]">PTN 2025</span>
+                    <span className="text-xl font-bold text-[var(--color-primary)]">PTN 2026</span>
                 </div>
             </div>
 
