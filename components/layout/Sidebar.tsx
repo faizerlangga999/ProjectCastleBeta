@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { User } from "@supabase/supabase-js";
 
-// Icons as simple SVG components
+// Icons as simple SVG components (unchanged)
 const HomeIcon = ({ className }: { className?: string }) => (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
@@ -50,6 +53,51 @@ const navItems = [
 
 export default function Sidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+    const [user, setUser] = useState<User | null>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const supabase = createClient();
+
+    useEffect(() => {
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                setIsAdmin(profile?.role === 'admin');
+            }
+        };
+        getUser();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+            if (!currentUser) setIsAdmin(false);
+            else {
+                // Check role on session change
+                supabase.from('profiles')
+                    .select('role')
+                    .eq('id', currentUser.id)
+                    .single()
+                    .then(({ data }) => setIsAdmin(data?.role === 'admin'));
+            }
+            if (_event === 'SIGNED_OUT') {
+                router.refresh();
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [supabase, router]);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push("/login");
+    };
 
     return (
         <aside className="hidden md:flex w-72 h-screen bg-white border-r border-gray-200 sticky top-0 flex-col p-6 z-40">
@@ -84,19 +132,76 @@ export default function Sidebar() {
                         </Link>
                     );
                 })}
+
+                {/* Admin Link */}
+                {isAdmin && (
+                    <Link
+                        href="/admin"
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mt-6 border-t border-gray-50 pt-6 ${pathname.startsWith("/admin")
+                            ? "text-[var(--color-primary)] bg-blue-50"
+                            : "text-gray-400 hover:text-[var(--color-primary)] hover:bg-blue-50"
+                            }`}
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="font-bold text-xs uppercase tracking-wider">Admin Panel</span>
+                    </Link>
+                )}
             </nav>
 
-            {/* Login CTA for Guest */}
+            {/* Profile / Login Section */}
             <div className="p-4 border-t border-gray-200">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-                    <h4 className="font-bold text-gray-900 text-sm mb-1">Gabung Member</h4>
-                    <p className="text-xs text-gray-600 mb-3">
-                        Simpan progress latihan dan diskusi bareng user lain.
-                    </p>
-                    <Link href="/login" className="block w-full py-2 bg-[var(--color-primary)] text-white text-xs font-bold rounded-lg text-center hover:bg-[var(--color-primary-dark)] transition-colors">
-                        Masuk / Daftar
-                    </Link>
-                </div>
+                {user ? (
+                    <div className="space-y-3">
+                        <Link href="/profile" className="flex items-center gap-3 hover:bg-gray-50 rounded-lg p-2 transition-colors -ml-2 -mr-2">
+                            {/* Avatar */}
+                            {user.user_metadata.avatar_url ? (
+                                <img
+                                    src={user.user_metadata.avatar_url}
+                                    alt="Profile"
+                                    className="w-10 h-10 rounded-full border border-gray-200"
+                                />
+                            ) : (
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                    <span className="text-gray-500 font-bold">{user.email?.charAt(0).toUpperCase()}</span>
+                                </div>
+                            )}
+
+                            {/* User Info */}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-gray-900 truncate">
+                                    {user.user_metadata.full_name || user.email?.split('@')[0]}
+                                </p>
+                                <p className="text-xs text-gray-500 truncate">
+                                    Pejuang PTN
+                                </p>
+                            </div>
+                        </Link>
+
+                        {/* Logout Button */}
+                        <button
+                            onClick={handleLogout}
+                            className="w-full py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg text-center hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Keluar
+                        </button>
+                    </div>
+                ) : (
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+                        <h4 className="font-bold text-gray-900 text-sm mb-1">Gabung Member</h4>
+                        <p className="text-xs text-gray-600 mb-3">
+                            Simpan progress latihan dan diskusi bareng user lain.
+                        </p>
+                        <Link href="/login" className="block w-full py-2 bg-[var(--color-primary)] text-white text-xs font-bold rounded-lg text-center hover:bg-[var(--color-primary-dark)] transition-colors">
+                            Masuk / Daftar
+                        </Link>
+                    </div>
+                )}
             </div>
         </aside>
     );

@@ -1,4 +1,7 @@
+"use client";
+
 import { MainLayout } from "@/components/layout";
+import { useState } from "react";
 
 // Mock events data
 const MOCK_EVENTS = [
@@ -6,8 +9,9 @@ const MOCK_EVENTS = [
         id: 1,
         title: "Live Session: Strategi Lolos UI 2025",
         description: "Sharing pengalaman dan tips masuk UI dari kakak tingkat yang sudah lolos",
-        date: "15 Januari 2026",
-        time: "19:00 - 21:00 WIB",
+        date: "2026-01-15",
+        time: "19:00",
+        duration: 120, // minutes
         type: "Zoom",
         speaker: "Kak Andi (FK UI 2024)",
         registered: 156,
@@ -18,8 +22,9 @@ const MOCK_EVENTS = [
         id: 2,
         title: "Review Soal UTBK 2024 - TPS",
         description: "Pembahasan lengkap soal TPS yang keluar di UTBK tahun lalu",
-        date: "18 Januari 2026",
-        time: "20:00 - 22:00 WIB",
+        date: "2026-01-18",
+        time: "20:00",
+        duration: 120,
         type: "Google Meet",
         speaker: "Dr. UTBK",
         registered: 89,
@@ -30,24 +35,13 @@ const MOCK_EVENTS = [
         id: 3,
         title: "Workshop: Manajemen Waktu UTBK",
         description: "Belajar teknik time management untuk mengerjakan soal dengan efisien",
-        date: "22 Januari 2026",
-        time: "15:00 - 17:00 WIB",
+        date: "2026-01-22",
+        time: "15:00",
+        duration: 120,
         type: "Zoom",
         speaker: "Kak Sarah (Psikologi UGM)",
         registered: 45,
         maxParticipants: 100,
-        status: "upcoming",
-    },
-    {
-        id: 4,
-        title: "Try Out Nasional UTBK Batch 1",
-        description: "Simulasi ujian dengan soal standar UTBK dan analisis hasil lengkap",
-        date: "28 Januari 2026",
-        time: "08:00 - 12:00 WIB",
-        type: "Online",
-        speaker: "Tim Pejuang PTN",
-        registered: 320,
-        maxParticipants: 500,
         status: "upcoming",
     },
 ];
@@ -72,6 +66,31 @@ const PAST_EVENTS = [
 ];
 
 export default function EventPage() {
+    const [registeredEvents, setRegisteredEvents] = useState<number[]>([]);
+
+    const generateGoogleCalendarUrl = (event: typeof MOCK_EVENTS[0]) => {
+        const start = new Date(`${event.date}T${event.time}:00`);
+        const end = new Date(start.getTime() + event.duration * 60000);
+
+        const formatDate = (date: Date) => date.toISOString().replace(/-|:|\.\d+/g, "");
+
+        const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
+        const params = new URLSearchParams({
+            text: event.title,
+            details: `${event.description}\n\nPembicara: ${event.speaker}\nPlatform: ${event.type}`,
+            dates: `${formatDate(start)}/${formatDate(end)}`,
+        });
+
+        return `${baseUrl}&${params.toString()}`;
+    };
+
+    const handleRegister = (id: number) => {
+        if (!registeredEvents.includes(id)) {
+            setRegisteredEvents([...registeredEvents, id]);
+            alert("Berhasil mendaftar! Link bergabung akan dikirim ke emailmu.");
+        }
+    };
+
     return (
         <MainLayout>
             <div className="space-y-6 animate-fade-in">
@@ -88,56 +107,68 @@ export default function EventPage() {
                     </h2>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {MOCK_EVENTS.map((event) => (
-                            <article key={event.id} className="card card-hover p-5">
-                                <div className="flex items-start gap-4">
-                                    {/* Date Badge */}
-                                    <div className="flex-shrink-0 w-14 h-14 bg-[var(--color-primary)] rounded-xl flex flex-col items-center justify-center text-white">
-                                        <span className="text-lg font-bold">{event.date.split(" ")[0]}</span>
-                                        <span className="text-[10px] uppercase">{event.date.split(" ")[1].slice(0, 3)}</span>
-                                    </div>
+                        {MOCK_EVENTS.map((event) => {
+                            const eventDate = new Date(event.date);
+                            const day = eventDate.getDate();
+                            const month = eventDate.toLocaleDateString('id-ID', { month: 'short' });
+                            const isRegistered = registeredEvents.includes(event.id);
 
-                                    {/* Content */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${event.type === "Zoom" ? "bg-blue-100 text-blue-700" :
+                            return (
+                                <article key={event.id} className="card p-5">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-14 h-14 bg-[var(--color-primary)] rounded-xl flex flex-col items-center justify-center text-white">
+                                            <span className="text-lg font-bold">{day}</span>
+                                            <span className="text-[10px] uppercase">{month}</span>
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${event.type === "Zoom" ? "bg-blue-100 text-blue-700" :
                                                     event.type === "Google Meet" ? "bg-green-100 text-green-700" :
                                                         "bg-purple-100 text-purple-700"
-                                                }`}>
-                                                {event.type}
-                                            </span>
-                                            <span className="text-xs text-gray-400">{event.time}</span>
-                                        </div>
-
-                                        <h3 className="font-bold text-gray-900 mb-1">{event.title}</h3>
-                                        <p className="text-xs text-gray-500 line-clamp-2 mb-2">{event.description}</p>
-
-                                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                                            <span>👨‍🏫 {event.speaker}</span>
-                                        </div>
-
-                                        {/* Progress & CTA */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex-1 mr-4">
-                                                <div className="flex justify-between text-xs mb-1">
-                                                    <span className="text-gray-500">{event.registered} terdaftar</span>
-                                                    <span className="text-gray-400">{event.maxParticipants} max</span>
-                                                </div>
-                                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-[var(--color-primary)] rounded-full transition-all"
-                                                        style={{ width: `${(event.registered / event.maxParticipants) * 100}%` }}
-                                                    ></div>
-                                                </div>
+                                                    }`}>
+                                                    {event.type}
+                                                </span>
+                                                <span className="text-xs text-gray-400">{event.time} WIB</span>
                                             </div>
-                                            <button className="px-4 py-2 bg-[var(--color-primary)] text-white text-xs font-bold rounded-lg hover:bg-[var(--color-primary-dark)] transition-colors">
-                                                Daftar
-                                            </button>
+
+                                            <h3 className="font-bold text-gray-900 mb-1">{event.title}</h3>
+                                            <p className="text-xs text-gray-500 line-clamp-2 mb-2">{event.description}</p>
+
+                                            <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                                                <span>👨‍🏫 {event.speaker}</span>
+                                            </div>
+
+                                            {/* Progress & CTA */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1 mr-4">
+                                                    <div className="flex justify-between text-xs mb-1">
+                                                        <span className="text-gray-500">{event.registered + (isRegistered ? 1 : 0)} terdaftar</span>
+                                                        <span className="text-gray-400">{event.maxParticipants} max</span>
+                                                    </div>
+                                                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-[var(--color-primary)] rounded-full transition-all"
+                                                            style={{ width: `${((event.registered + (isRegistered ? 1 : 0)) / event.maxParticipants) * 100}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRegister(event.id)}
+                                                    disabled={isRegistered}
+                                                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${isRegistered
+                                                        ? "bg-green-100 text-green-700 cursor-default"
+                                                        : "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)]"
+                                                        }`}
+                                                >
+                                                    {isRegistered ? "Terdaftar ✓" : "Daftar"}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </article>
-                        ))}
+                                </article>
+                            );
+                        })}
                     </div>
                 </section>
 
@@ -152,14 +183,24 @@ export default function EventPage() {
                         <div>
                             <h3 className="font-bold text-gray-900 mb-1">Jangan Sampai Ketinggalan!</h3>
                             <p className="text-sm text-gray-600 mb-3">
-                                Tambahkan jadwal event ke Google Calendar-mu agar tidak lupa.
+                                Tambahkan jadwal favoritmu ke Google Calendar agar kamu dapat notifikasi sebelum mulai.
                             </p>
-                            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors">
-                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zM12 17.25a.75.75 0 01-.75-.75v-3.75H7.5a.75.75 0 010-1.5h3.75V7.5a.75.75 0 011.5 0v3.75h3.75a.75.75 0 010 1.5h-3.75v3.75a.75.75 0 01-.75.75z" />
-                                </svg>
-                                Add to Google Calendar
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                                {MOCK_EVENTS.map(event => (
+                                    <a
+                                        key={event.id}
+                                        href={generateGoogleCalendarUrl(event)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold hover:bg-gray-50 transition-colors shadow-sm"
+                                    >
+                                        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zM12 17.25a.75.75 0 01-.75-.75v-3.75H7.5a.75.75 0 010-1.5h3.75V7.5a.75.75 0 011.5 0v3.75h3.75a.75.75 0 010 1.5h-3.75v3.75a.75.75 0 01-.75.75z" />
+                                        </svg>
+                                        + {event.title.split(":")[0]}
+                                    </a>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </section>

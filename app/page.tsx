@@ -1,4 +1,5 @@
 import { MainLayout } from "@/components/layout";
+import Link from 'next/link';
 
 // Mock data
 const MOCK_STATS = {
@@ -38,12 +39,12 @@ export default function HomePage() {
               Platform komunitas dan belajar mandiri untuk siswa SMA. Forum diskusi, modul video, dan simulasi kuis yang dioptimalkan untuk HP.
             </p>
             <div className="flex flex-wrap gap-3">
-              <a href="/quiz" className="btn-primary bg-white text-[var(--color-primary)] hover:bg-blue-50 px-6 py-3 rounded-full font-bold text-sm shadow-lg">
+              <Link href="/quiz" className="btn-primary bg-white text-[var(--color-primary)] hover:bg-blue-50 px-6 py-3 rounded-full font-bold text-sm shadow-lg">
                 Mulai Kuis
-              </a>
-              <a href="/belajar" className="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-white/30 transition-colors">
+              </Link>
+              <Link href="/belajar" className="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-white/30 transition-colors">
                 Materi Belajar
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -77,9 +78,9 @@ export default function HomePage() {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-bold text-gray-900">🎯 Kuis Populer</h2>
-              <a href="/quiz" className="text-sm font-semibold text-[var(--color-primary)] hover:underline">
+              <Link href="/quiz" className="text-sm font-semibold text-[var(--color-primary)] hover:underline">
                 Lihat Semua →
-              </a>
+              </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {MOCK_POPULAR_QUIZZES.map((quiz) => (
@@ -91,8 +92,8 @@ export default function HomePage() {
                       </svg>
                     </div>
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${quiz.difficulty === "Mudah" ? "bg-green-100 text-green-700" :
-                        quiz.difficulty === "Sedang" ? "bg-yellow-100 text-yellow-700" :
-                          "bg-red-100 text-red-700"
+                      quiz.difficulty === "Sedang" ? "bg-yellow-100 text-yellow-700" :
+                        "bg-red-100 text-red-700"
                       }`}>
                       {quiz.difficulty}
                     </span>
@@ -109,7 +110,12 @@ export default function HomePage() {
 
           {/* Upcoming Events */}
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-gray-900">📅 Event Mendatang</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-bold text-gray-900">📅 Event Mendatang</h2>
+              <Link href="/event" className="text-sm font-semibold text-[var(--color-primary)] hover:underline">
+                Lihat Selengkapnya →
+              </Link>
+            </div>
             <div className="card p-5 space-y-4">
               {MOCK_UPCOMING_EVENTS.map((event) => (
                 <div key={event.id} className="border-l-4 border-[var(--color-primary)] pl-4 py-1">
@@ -126,7 +132,7 @@ export default function HomePage() {
             <div className="card p-5">
               <h3 className="font-bold text-gray-900 mb-3">⚡ Akses Cepat</h3>
               <div className="space-y-2">
-                <a href="/forum" className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--color-bg-secondary)] transition-colors">
+                <Link href="/forum" className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--color-bg-secondary)] transition-colors">
                   <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                     <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242" />
@@ -136,8 +142,8 @@ export default function HomePage() {
                     <p className="text-sm font-semibold">Forum Diskusi</p>
                     <p className="text-xs text-gray-500">Tanya jawab soal</p>
                   </div>
-                </a>
-                <a href="/belajar" className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--color-bg-secondary)] transition-colors">
+                </Link>
+                <Link href="/belajar" className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--color-bg-secondary)] transition-colors">
                   <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                     <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
@@ -147,7 +153,18 @@ export default function HomePage() {
                     <p className="text-sm font-semibold">Video Materi</p>
                     <p className="text-xs text-gray-500">Belajar dari mentor</p>
                   </div>
-                </a>
+                </Link>
+                <Link href="/event" className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--color-bg-secondary)] transition-colors">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">Jadwal Event</p>
+                    <p className="text-xs text-gray-500">Webinar & Tryout</p>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>

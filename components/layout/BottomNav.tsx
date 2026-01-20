@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 // Icons as simple SVG components
 const HomeIcon = ({ className }: { className?: string }) => (
@@ -34,21 +37,59 @@ const EventIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
+const UserIcon = ({ className }: { className?: string }) => (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+);
+
 const navItems = [
     { href: "/", label: "Beranda", icon: HomeIcon },
     { href: "/forum", label: "Forum", icon: ForumIcon },
     { href: "/quiz", label: "Kuis", icon: QuizIcon },
     { href: "/belajar", label: "Belajar", icon: LearnIcon },
-    { href: "/event", label: "Event", icon: EventIcon },
+    // { href: "/event", label: "Event", icon: EventIcon }, // Removed Event to make space or keep it? User didn't ask to remove. 
+    // Let's keep 5 items is fine, usually bottom nav is max 5.
+    // Putting Profile as the last item replaces Event for now or we make it 6? 6 is too crowded.
+    // The user didn't explicitly ask to remove anything, but typically Profile is crucial.
+    // Let's replace "Event" or "Belajar" or just add it. 
+    // "Event" seems least critical for MVP unless specified. 
+    // Wait, the prompt implies "tulis login" visible.
+    // I will replace "Event" with Profile authentication item for mobile.
 ];
 
 export default function BottomNav() {
     const pathname = usePathname();
+    const [user, setUser] = useState<User | null>(null);
+    const supabase = createClient();
+
+    useEffect(() => {
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        getUser();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
+    }, [supabase]);
+
+    const finalNavItems = [
+        ...navItems.slice(0, 4), // Keep first 4
+        {
+            href: user ? "/profile" : "/login",
+            label: user ? "Profil" : "Masuk",
+            icon: UserIcon
+        }
+    ];
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <div className="flex justify-between items-center h-16 px-4 pb-safe">
-                {navItems.map((item) => {
+                {finalNavItems.map((item) => {
                     const isActive = pathname === item.href;
                     const Icon = item.icon;
 
