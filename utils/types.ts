@@ -24,6 +24,7 @@ export interface Question {
     explanation_text: string;
     question_image_url?: string;
     explanation_image_url?: string;
+    explanation_slides_url?: string;
 }
 
 export interface Thread {

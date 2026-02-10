@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembahasan TPS - Pola Bilangan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            margin-bottom: 1rem;
+            color: #00d4ff;
+        }
+
+        h2 {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            margin-bottom: 1rem;
+            color: #ffd700;
+        }
+
+        p {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .sequence {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .num {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #00d4ff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .num.highlight {
+            background: #00d4ff;
+            color: #1a1a2e;
+            transform: scale(1.1);
+        }
+
+        .num.answer {
+            background: #ffd700;
+            color: #1a1a2e;
+            border-color: #ffd700;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #ff6b6b;
+        }
+
+        .formula {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            margin: 1rem 0;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .prev {
+            background: #6c757d;
+            color: white;
+        }
+
+        .next {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .step.done {
+            background: #4caf50;
+        }
+
+        .step.current {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="progress">Slide <span id="current">1</span> / <span id="total">5</span></div>
+
+    <!-- Slide 1: Soal -->
+    <div class="slide active">
+        <h1>🧩 Pembahasan TPS</h1>
+        <h2>Pola Bilangan</h2>
+        <p>Tentukan bilangan selanjutnya dari pola berikut:</p>
+        <div class="sequence">
+            <div class="num">2</div>
+            <div class="num">6</div>
+            <div class="num">12</div>
+            <div class="num">20</div>
+            <div class="num">30</div>
+            <div class="num">?</div>
+        </div>
+        <p style="color: #888;">Klik Next untuk melihat pembahasan →</p>
+    </div>
+
+    <!-- Slide 2: Analisis Selisih -->
+    <div class="slide">
+        <h2>📊 Langkah 1: Cari Selisih</h2>
+        <p>Hitung selisih antar bilangan berturut-turut:</p>
+        <div class="sequence">
+            <div class="num">2</div>
+            <div class="arrow">→</div>
+            <div class="num">6</div>
+            <div class="arrow">→</div>
+            <div class="num">12</div>
+            <div class="arrow">→</div>
+            <div class="num">20</div>
+            <div class="arrow">→</div>
+            <div class="num">30</div>
+        </div>
+        <div class="formula">
+            6 - 2 = <strong>4</strong> &nbsp;|&nbsp;
+            12 - 6 = <strong>6</strong> &nbsp;|&nbsp;
+            20 - 12 = <strong>8</strong> &nbsp;|&nbsp;
+            30 - 20 = <strong>10</strong>
+        </div>
+        <p>Selisih: <strong style="color:#ffd700">4, 6, 8, 10, ...</strong> (naik 2)</p>
+    </div>
+
+    <!-- Slide 3: Pola Ditemukan -->
+    <div class="slide">
+        <h2>💡 Langkah 2: Temukan Pola</h2>
+        <p>Selisih membentuk deret aritmatika dengan beda = 2</p>
+        <div class="step-indicator">
+            <div class="step done">+4</div>
+            <div class="step done">+6</div>
+            <div class="step done">+8</div>
+            <div class="step done">+10</div>
+            <div class="step current">+12</div>
+        </div>
+        <div class="formula">Selisih berikutnya = 10 + 2 = <strong style="color:#00d4ff">12</strong></div>
+    </div>
+
+    <!-- Slide 4: Hitung Jawaban -->
+    <div class="slide">
+        <h2>🔢 Langkah 3: Hitung Jawaban</h2>
+        <p>Bilangan terakhir + selisih berikutnya:</p>
+        <div class="formula">30 + 12 = <strong style="color:#ffd700; font-size: 2rem;">42</strong></div>
+        <div class="sequence">
+            <div class="num">2</div>
+            <div class="num">6</div>
+            <div class="num">12</div>
+            <div class="num">20</div>
+            <div class="num">30</div>
+            <div class="num answer">42</div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Kesimpulan -->
+    <div class="slide">
+        <h1>✅ Jawaban: 42</h1>
+        <h2>Rumus Umum: n(n+1)</h2>
+        <div class="formula" style="text-align: left;">
+            n=1 → 1×2 = 2<br>
+            n=2 → 2×3 = 6<br>
+            n=3 → 3×4 = 12<br>
+            n=4 → 4×5 = 20<br>
+            n=5 → 5×6 = 30<br>
+            n=6 → 6×7 = <strong style="color:#ffd700">42</strong>
+        </div>
+        <p style="margin-top: 1rem; color: #4caf50;">🎉 Selamat! Kamu sudah memahami polanya.</p>
+    </div>
+
+    <div class="controls">
+        <button class="prev" onclick="prevSlide()" id="prevBtn">← Sebelumnya</button>
+        <button class="next" onclick="nextSlide()" id="nextBtn">Selanjutnya →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const total = slides.length;
+
+        document.getElementById('total').textContent = total;
+        updateButtons();
+
+        function showSlide(n) {
+            slides.forEach(s => s.classList.remove('active'));
+            slides[n].classList.add('active');
+            document.getElementById('current').textContent = n + 1;
+            updateButtons();
+        }
+
+        function nextSlide() {
+            if (currentSlide < total - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+
+        function updateButtons() {
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === total - 1;
+            document.getElementById('nextBtn').textContent =
+                currentSlide === total - 1 ? '✓ Selesai' : 'Selanjutnya →';
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Touch swipe support
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+        document.addEventListener('touchend', e => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) {
+                diff > 0 ? nextSlide() : prevSlide();
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -6,6 +6,7 @@ import AuthModal from "@/components/ui/AuthModal";
 import { createClient } from "@/utils/supabase/client";
 import { Quiz, Question } from "@/utils/types";
 import FormulaRenderer from "@/components/ui/FormulaRenderer";
+import ManimSlideViewer from "@/components/ui/ManimSlideViewer";
 
 interface Category {
     id: string;
@@ -24,6 +25,8 @@ export default function QuizPage() {
     const [answers, setAnswers] = useState<Record<number, string>>({});
     const [showExplanation, setShowExplanation] = useState<boolean | null>(null);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isReviewMode, setIsReviewMode] = useState(false);
+    const [explanationTab, setExplanationTab] = useState<"teks" | "slides">("teks");
 
     // Exam confirmation modal
     const [showExamConfirm, setShowExamConfirm] = useState(false);
@@ -128,6 +131,7 @@ export default function QuizPage() {
         setAnswers({});
         setShowExplanation(null);
         setShowResult(null);
+        setIsReviewMode(false);
 
         if (mode === "Ujian") {
             setTimeLeft(quiz.duration_minutes * 60);
@@ -137,7 +141,7 @@ export default function QuizPage() {
     };
 
     const handleSubmitQuiz = async () => {
-        if (!activeQuiz || !questions.length) return;
+        if (!activeQuiz || !questions.length || isReviewMode) return;
 
         setIsSubmitting(true);
         if (timerRef.current) clearInterval(timerRef.current);
@@ -180,12 +184,12 @@ export default function QuizPage() {
     const handlePrevQuestion = () => {
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(prev => prev - 1);
-            setShowExplanation(activeQuiz?.mode === "Latihan" && !!answers[currentQuestionIndex - 1]);
+            setShowExplanation(isReviewMode || (activeQuiz?.mode === "Latihan" && !!answers[currentQuestionIndex - 1]));
         }
     };
 
     const handleSelectOption = (key: string) => {
-        if (!showExplanation && !showResult) {
+        if (!showExplanation && !showResult && !isReviewMode) {
             setAnswers(prev => ({ ...prev, [currentQuestionIndex]: key }));
         }
     };
@@ -224,14 +228,26 @@ export default function QuizPage() {
                         <div className="space-y-3 pt-4">
                             <button
                                 onClick={() => {
+                                    setShowResult(null);
+                                    setIsReviewMode(true);
+                                    setCurrentQuestionIndex(0);
+                                    setShowExplanation(true);
+                                }}
+                                className="w-full py-3 bg-white border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-bold rounded-xl hover:bg-blue-50 transition-all"
+                            >
+                                Lihat Pembahasan
+                            </button>
+                            <button
+                                onClick={() => {
                                     setActiveQuiz(null);
                                     setShowResult(null);
+                                    setIsReviewMode(false);
                                 }}
                                 className="w-full py-3 bg-[var(--color-primary)] text-white font-bold rounded-xl hover:bg-[var(--color-primary-dark)] transition-all"
                             >
                                 Kembali ke Dashboard
                             </button>
-                            {activeQuiz?.mode === "Latihan" && (
+                            {!isReviewMode && activeQuiz?.mode === "Latihan" && (
                                 <p className="text-xs text-gray-400">Kamu bisa meninjau jawabanmu melalui fitur riwayat di profil (segera hadir).</p>
                             )}
                         </div>
@@ -265,7 +281,7 @@ export default function QuizPage() {
                                 <div>
                                     <h2 className="font-bold text-gray-900">{activeQuiz.title}</h2>
                                     <p className="text-xs text-gray-500">
-                                        Mode {activeQuiz.mode} • Soal {currentQuestionIndex + 1}/{questions.length}
+                                        {isReviewMode ? 'Pembahasan' : `Mode ${activeQuiz.mode}`} • Soal {currentQuestionIndex + 1}/{questions.length}
                                     </p>
                                 </div>
                             </div>
@@ -286,7 +302,7 @@ export default function QuizPage() {
                                     key={idx}
                                     onClick={() => {
                                         setCurrentQuestionIndex(idx);
-                                        setShowExplanation(activeQuiz.mode === "Latihan" && !!answers[idx]);
+                                        setShowExplanation(isReviewMode || (activeQuiz.mode === "Latihan" && !!answers[idx]));
                                     }}
                                     className={`w-8 h-8 rounded-lg text-xs font-bold flex-shrink-0 transition-all ${idx === currentQuestionIndex
                                         ? "bg-[var(--color-primary)] text-white"
@@ -321,8 +337,8 @@ export default function QuizPage() {
 
                                 let optionClass = "border-gray-200 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-50)]";
 
-                                if (showExplanation) {
-                                    if (activeQuiz.mode === "Latihan") {
+                                if (showExplanation || isReviewMode) {
+                                    if (activeQuiz.mode === "Latihan" || isReviewMode) {
                                         if (isCorrectOption) optionClass = "border-green-500 bg-green-50";
                                         else if (isSelected) optionClass = "border-red-500 bg-red-50";
                                     } else {
@@ -336,10 +352,10 @@ export default function QuizPage() {
                                     <button
                                         key={key}
                                         onClick={() => handleSelectOption(key)}
-                                        disabled={(activeQuiz.mode === "Latihan" && !!showExplanation) || isSubmitting}
+                                        disabled={((activeQuiz.mode === "Latihan" || isReviewMode) && !!showExplanation) || isSubmitting}
                                         className={`w-full flex items-start gap-3 p-4 border-2 rounded-xl text-left transition-all ${optionClass}`}
                                     >
-                                        <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${showExplanation && activeQuiz.mode === "Latihan"
+                                        <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${(showExplanation || isReviewMode) && (activeQuiz.mode === "Latihan" || isReviewMode)
                                             ? isCorrectOption
                                                 ? "bg-green-500 text-white"
                                                 : isSelected
@@ -360,9 +376,10 @@ export default function QuizPage() {
                         </div>
                     </div>
 
-                    {/* Explanation (Practice Mode) */}
-                    {showExplanation && activeQuiz.mode === "Latihan" && (
+                    {/* Explanation (Practice Mode or Review Mode) */}
+                    {showExplanation && (activeQuiz.mode === "Latihan" || isReviewMode) && (
                         <div className={`card p-5 ${isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}>
+                            {/* Result Header */}
                             <div className="flex items-center gap-2 mb-3">
                                 {isCorrect ? (
                                     <span className="font-bold text-green-700 flex items-center gap-2">
@@ -380,9 +397,41 @@ export default function QuizPage() {
                                     </span>
                                 )}
                             </div>
-                            <div className="text-sm text-gray-700 leading-relaxed">
-                                <span className="font-bold">Pembahasan:</span> <FormulaRenderer content={question.explanation_text} />
-                            </div>
+
+                            {/* Tabs (only show if slides available) */}
+                            {question.explanation_slides_url && (
+                                <div className="flex gap-2 mb-4 border-b border-gray-200 pb-2">
+                                    <button
+                                        onClick={() => setExplanationTab("teks")}
+                                        className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${explanationTab === "teks"
+                                                ? "bg-white text-[var(--color-primary)] shadow-sm"
+                                                : "text-gray-500 hover:text-gray-700"
+                                            }`}
+                                    >
+                                        📝 Teks
+                                    </button>
+                                    <button
+                                        onClick={() => setExplanationTab("slides")}
+                                        className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${explanationTab === "slides"
+                                                ? "bg-white text-[var(--color-primary)] shadow-sm"
+                                                : "text-gray-500 hover:text-gray-700"
+                                            }`}
+                                    >
+                                        🎬 Slides
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Content based on tab */}
+                            {(!question.explanation_slides_url || explanationTab === "teks") && (
+                                <div className="text-sm text-gray-700 leading-relaxed">
+                                    <span className="font-bold">Pembahasan:</span> <FormulaRenderer content={question.explanation_text} />
+                                </div>
+                            )}
+
+                            {question.explanation_slides_url && explanationTab === "slides" && (
+                                <ManimSlideViewer src={question.explanation_slides_url} />
+                            )}
                         </div>
                     )}
 
@@ -396,7 +445,14 @@ export default function QuizPage() {
                             ← Sebelumnya
                         </button>
 
-                        {activeQuiz.mode === "Latihan" && !showExplanation ? (
+                        {isReviewMode ? (
+                            <button
+                                onClick={currentQuestionIndex === questions.length - 1 ? () => setShowResult({ score: Math.round((Object.values(questions).filter((q, i) => answers[i] === q.correct_answer).length / questions.length) * 100), total: questions.length }) : handleNextQuestion}
+                                className="flex-1 py-3 bg-[var(--color-primary)] text-white font-bold rounded-xl hover:bg-[var(--color-primary-dark)] transition-all"
+                            >
+                                {currentQuestionIndex === questions.length - 1 ? 'Kembali ke Hasil Kuis ✓' : 'Selanjutnya →'}
+                            </button>
+                        ) : activeQuiz.mode === "Latihan" && !showExplanation ? (
                             <button
                                 onClick={handleConfirmAnswer}
                                 disabled={!selectedAnswer || isSubmitting}

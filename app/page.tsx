@@ -1,5 +1,8 @@
+"use client";
+
 import { MainLayout } from "@/components/layout";
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 // Mock data
 const MOCK_STATS = {
@@ -20,6 +23,15 @@ const MOCK_POPULAR_QUIZZES = [
 ];
 
 export default function HomePage() {
+  const [daysLeft, setDaysLeft] = useState(120);
+  const targetDate = new Date("2026-04-21T00:00:00").getTime();
+
+  useEffect(() => {
+    const now = new Date().getTime();
+    const distance = targetDate - now;
+    setDaysLeft(Math.floor(distance / (1000 * 60 * 60 * 24)));
+  }, [targetDate]);
+
   return (
     <MainLayout>
       <div className="space-y-6 animate-fade-in">
@@ -29,9 +41,9 @@ export default function HomePage() {
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
           <div className="relative z-10 max-w-lg">
-            <div className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold mb-4">
-              🔥 UTBK 2026 tinggal 120 hari lagi!
-            </div>
+            <Link href="/countdown" className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold mb-4 hover:bg-white/30 transition-colors cursor-pointer">
+              🔥 UTBK 2026 tinggal {daysLeft} hari lagi!
+            </Link>
             <h1 className="text-2xl md:text-4xl font-extrabold mb-3 leading-tight">
               Semangat Belajar,<br />Pejuang PTN! 🚀
             </h1>

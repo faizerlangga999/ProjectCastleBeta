@@ -16,6 +16,7 @@ interface Question {
     explanation_text: string;
     question_image_url: string | null;
     explanation_image_url: string | null;
+    explanation_slides_url: string | null;
 }
 
 interface Quiz {
@@ -80,7 +81,8 @@ function AdminQuestionsContent() {
             correct_answer: question.correct_answer,
             explanation_text: question.explanation_text,
             question_image_url: question.question_image_url,
-            explanation_image_url: question.explanation_image_url
+            explanation_image_url: question.explanation_image_url,
+            explanation_slides_url: question.explanation_slides_url
         });
     };
 
@@ -102,7 +104,8 @@ function AdminQuestionsContent() {
                     correct_answer: editForm.correct_answer,
                     explanation_text: editForm.explanation_text,
                     question_image_url: editForm.question_image_url || null,
-                    explanation_image_url: editForm.explanation_image_url || null
+                    explanation_image_url: editForm.explanation_image_url || null,
+                    explanation_slides_url: editForm.explanation_slides_url || null
                 })
                 .eq("id", editingQuestion.id);
             if (error) throw error;
@@ -323,6 +326,19 @@ function AdminQuestionsContent() {
                                     placeholder="https://..."
                                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[var(--color-primary)]"
                                 />
+                            </div>
+
+                            {/* Manim Slides URL */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">URL Manim Slides (HTML)</label>
+                                <input
+                                    type="url"
+                                    value={editForm.explanation_slides_url || ""}
+                                    onChange={(e) => setEditForm({ ...editForm, explanation_slides_url: e.target.value })}
+                                    placeholder="https://storage.../slides.html"
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[var(--color-primary)]"
+                                />
+                                <p className="text-xs text-gray-400 mt-1">Upload HTML dari manim-slides convert</p>
                             </div>
 
                             <div className="flex gap-3 pt-2">

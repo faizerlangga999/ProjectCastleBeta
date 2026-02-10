@@ -140,10 +140,8 @@ export default function ThreadDetailPage() {
         try {
             if (newIsLiked) {
                 await supabase.from("thread_likes").insert({ thread_id: id, user_id: userId });
-                await supabase.from("threads").update({ likes: newLikes }).eq("id", id);
             } else {
                 await supabase.from("thread_likes").delete().eq("thread_id", id).eq("user_id", userId);
-                await supabase.from("threads").update({ likes: newLikes }).eq("id", id);
             }
         } catch (error) {
             console.error("Error toggling like:", error);
@@ -181,12 +179,6 @@ export default function ThreadDetailPage() {
             });
 
             if (insertError) throw insertError;
-
-            // Update comment count on thread
-            const newCount = (thread?.comments_count || 0) + 1;
-            await supabase.from("threads").update({ comments_count: newCount }).eq("id", id);
-            if (thread) setThread({ ...thread, comments_count: newCount });
-
             setNewComment("");
         } catch (error: any) {
             console.error("Error submitting comment:", error?.message || error);
@@ -200,12 +192,6 @@ export default function ThreadDetailPage() {
         try {
             const { error } = await supabase.from("comments").delete().eq("id", commentId);
             if (error) throw error;
-
-            // Update comment count on thread
-            const newCount = Math.max(0, (thread?.comments_count || 0) - 1);
-            await supabase.from("threads").update({ comments_count: newCount }).eq("id", id);
-            if (thread) setThread({ ...thread, comments_count: newCount });
-
             // UI update handled by realtime or fetch
         } catch (error: any) {
             alert("Gagal menghapus komentar: " + error.message);
@@ -321,7 +307,7 @@ export default function ThreadDetailPage() {
                             onClick={handleLike}
                             className={`flex items-center gap-2 transition-colors group ${isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
                         >
-                            <svg className={`w-6 h-6 ${isLiked ? 'fill-red-500' : 'group-hover:fill-red-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className={`w-6 h-6 transition-colors ${isLiked ? 'fill-red-500 text-red-500' : 'group-hover:fill-red-500 group-hover:text-red-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                             <span className="font-bold">{thread.likes}</span>
